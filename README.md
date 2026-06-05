@@ -3,7 +3,7 @@
 ## 🚀 Overview
 
 This is a full-stack web application that allows users to upload, search, and download study notes. It includes user authentication and REST API integration for efficient note management.
-This project is designed to help B.Tech students to access the study notes in one centralized platform, making learning resources easily available in one place.
+This project is designed to help the students to access the study notes in one centralized platform, making learning resources easily available in one place.
 
 ## 🛠️ Technologies Used
 
