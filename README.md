@@ -24,7 +24,9 @@ This project is designed to help B.Tech students to access the study notes in on
 
 project/
   src/            # Backend (Spring Boot)
+  
   pom.xml         # Backend configuration
+  
   frontend/       # Frontend files (HTML, CSS, JS)
 
 ## ⚙️ How to Run
