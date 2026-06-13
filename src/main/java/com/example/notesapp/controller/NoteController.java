@@ -1,4 +1,3 @@
-
 package com.example.notesapp.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,69 +21,68 @@ public class NoteController {
     @Autowired
     private NoteRepository repo;
 
-    // Upload note
- @PostMapping("/upload")
-public String upload(@RequestParam("file") MultipartFile file,
-                     @RequestParam String title,
-                     @RequestParam String subject) {
+    @PostMapping("/upload")
+    public String upload(@RequestParam("file") MultipartFile file,
+                         @RequestParam String title,
+                         @RequestParam String subject,
+                         @RequestParam Long userId) {
 
-    try {
-        System.out.println("API HIT");
+        try {
+            String folder = System.getProperty("user.dir") + "/uploads/";
 
-        // ✅ Use absolute path (IMPORTANT FIX)
-        String folder = System.getProperty("user.dir") + "/uploads/";
+            File dir = new File(folder);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
 
-        File dir = new File(folder);
-        if (!dir.exists()) {
-            dir.mkdirs();
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            String path = folder + fileName;
+
+            file.transferTo(new File(path));
+
+            Note note = new Note();
+            note.setTitle(title);
+            note.setSubject(subject);
+            note.setFilePath(path);
+            note.setUserId(userId); 
+
+            repo.save(note);
+
+            return "Uploaded Successfully";
+
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
         }
-
-        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        String path = folder + fileName;
-
-        // ✅ Save file
-        file.transferTo(new File(path));
-
-        // ✅ Save to DB
-        Note note = new Note();
-        note.setTitle(title);
-        note.setSubject(subject);
-        note.setFilePath(path);
-
-        repo.save(note);
-
-        return "Uploaded Successfully";
-
-    } catch (Exception e) {
-        e.printStackTrace(); // 🔴 shows real error if any
-        return "Error: " + e.getMessage();
     }
-}
 
-    // Get all notes
     @GetMapping
-    public List<Note> getAll() {
-        return repo.findAll();
+    public List<Note> getAll(@RequestParam Long userId) {
+        return repo.findByUserId(userId); 
     }
 
-    // Search notes
     @GetMapping("/search")
-    public List<Note> search(@RequestParam String keyword) {
-        return repo.searchNotes(keyword);
+    public List<Note> search(@RequestParam String keyword,
+                             @RequestParam Long userId) {
+        return repo.searchNotesByUser(keyword, userId);
     }
+    @GetMapping("/view/{id}")
+    public ResponseEntity<InputStreamResource> view(@PathVariable Long id) throws Exception {
 
-    // Download note
-    @GetMapping("/download/{id}")
-    public ResponseEntity<InputStreamResource> download(@PathVariable Long id) throws Exception {
-
-        Note note = repo.findById(id).orElseThrow();
+        Note note = repo.findById(id)
+            .orElseThrow(() -> new RuntimeException("Note not found"));
 
         File file = new File(note.getFilePath());
         InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
 
+        String contentType = java.nio.file.Files.probeContentType(file.toPath());
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=" + file.getName())
-                .body(resource);
-    }
+            .header(HttpHeaders.CONTENT_DISPOSITION,
+                    "inline; filename=" + file.getName())
+            .header(HttpHeaders.CONTENT_TYPE,
+                    contentType != null ? contentType : "application/octet-stream")
+            .body(resource);
+}
+    
+
 }
