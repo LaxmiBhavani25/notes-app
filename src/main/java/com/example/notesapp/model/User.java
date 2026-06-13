@@ -1,4 +1,5 @@
 
+
 package com.example.notesapp.model;
 
 import jakarta.persistence.*;
@@ -14,7 +15,6 @@ public class User {
     private String email;
     private String password;
 
-    // getters and setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
