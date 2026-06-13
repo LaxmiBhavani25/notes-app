@@ -1,4 +1,3 @@
-
 package com.example.notesapp.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,19 +21,23 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody User user) {
+public ResponseEntity<?> login(@RequestBody User loginUser) {
 
-    User existing = userRepo.findByEmail(user.getEmail());
+    try {
+        User user = userRepository.findByEmail(loginUser.getEmail());
 
-    
-    if (existing == null) {
-        return "User not found";
-    }
+        if (user == null) {
+            return ResponseEntity.status(401).body("Invalid login");
+        }
 
-    if (existing.getPassword().equals(user.getPassword())) {
-        return "Login Successful";
-    } else {
-        return "Invalid Credentials";
+        if (!user.getPassword().equals(loginUser.getPassword())) {
+            return ResponseEntity.status(401).body("Invalid login");
+        }
+
+        return ResponseEntity.ok(user);
+
+    } catch (Exception e) {
+        return ResponseEntity.status(401).body("Invalid login");
     }
 }
 }
