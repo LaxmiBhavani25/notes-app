@@ -2,7 +2,7 @@
 
 ## 🚀 Overview
 
-This is a full-stack web application that allows users to upload, search, and download study notes. It includes user authentication and REST API integration for efficient note management.
+This is a full-stack web application that allows users to upload, search, and view study notes. It includes user authentication and REST API integration for efficient note management.
 This project is designed to help the students to access the study notes in one centralized platform, making learning resources easily available in one place.
 
 ## 🛠️ Technologies Used
@@ -17,7 +17,7 @@ This project is designed to help the students to access the study notes in one c
 * User Registration & Login
 * Upload Notes (PDF/DOCX)
 * Search Notes by Keyword
-* Download Notes
+* View Notes
 * REST API Integration
 
 ## 📂 Project Structure
@@ -45,6 +45,6 @@ project/
 3. Use the interface to :
   * Register/Login
   * Add notes
-  * Search and download notes
+  * Search and view notes
 
 
