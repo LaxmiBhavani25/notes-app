@@ -1,4 +1,5 @@
 
+
 package com.example.notesapp.model;
 
 import jakarta.persistence.*;
