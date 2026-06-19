@@ -24,7 +24,7 @@ public class AuthController {
 public ResponseEntity<?> login(@RequestBody User loginUser) {
 
     try {
-        User user = userRepository.findByEmail(loginUser.getEmail());
+        User user = userRepo.findByEmail(loginUser.getEmail());
 
         if (user == null) {
             return ResponseEntity.status(401).body("Invalid login");
