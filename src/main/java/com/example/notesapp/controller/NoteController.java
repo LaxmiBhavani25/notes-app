@@ -1,6 +1,8 @@
 package com.example.notesapp.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -8,11 +10,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.notesapp.model.Note;
 import com.example.notesapp.repository.NoteRepository;
 
-import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
-
+import java.io.*;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/notes")
@@ -22,10 +21,6 @@ public class NoteController {
     @Autowired
     private NoteRepository repo;
 
-    @Autowired
-    private Cloudinary cloudinary;
-
-    //  Upload file to Cloudinary
     @PostMapping("/upload")
     public String upload(@RequestParam("file") MultipartFile file,
                          @RequestParam String title,
@@ -33,21 +28,23 @@ public class NoteController {
                          @RequestParam Long userId) {
 
         try {
-            Map uploadResult = cloudinary.uploader().upload(
-                    file.getBytes(),
-                   ObjectUtils.asMap(
-        "resource_type", "auto",
-        "type", "upload"
-    )
-            );
+            String folder = System.getProperty("user.dir") + "/uploads/";
 
-            String fileUrl = uploadResult.get("secure_url").toString();
+            File dir = new File(folder);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            String path = folder + fileName;
+
+            file.transferTo(new File(path));
 
             Note note = new Note();
             note.setTitle(title);
             note.setSubject(subject);
-            note.setFilePath(fileUrl); //  store cloud URL
-            note.setUserId(userId);
+            note.setFilePath(path);
+            note.setUserId(userId); 
 
             repo.save(note);
 
@@ -58,34 +55,34 @@ public class NoteController {
         }
     }
 
-    //  Get all notes
     @GetMapping
     public List<Note> getAll(@RequestParam Long userId) {
-        return repo.findByUserId(userId);
+        return repo.findByUserId(userId); 
     }
 
-    //  Search notes
     @GetMapping("/search")
     public List<Note> search(@RequestParam String keyword,
                              @RequestParam Long userId) {
         return repo.searchNotesByUser(keyword, userId);
     }
-
-    // View file 
     @GetMapping("/view/{id}")
-    public ResponseEntity<?> view(@PathVariable Long id) {
+    public ResponseEntity<InputStreamResource> view(@PathVariable Long id) throws Exception {
 
         Note note = repo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Note not found"));
+            .orElseThrow(() -> new RuntimeException("Note not found"));
 
-        return ResponseEntity
-                .status(302)
-                .header("Location", note.getFilePath())
-                .build();
-    }
-    @GetMapping("/deleteAll")
-public String deleteAll() {
-    repo.deleteAll();
-    return "Deleted";
+        File file = new File(note.getFilePath());
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+
+        String contentType = java.nio.file.Files.probeContentType(file.toPath());
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION,
+                    "inline; filename=" + file.getName())
+            .header(HttpHeaders.CONTENT_TYPE,
+                    contentType != null ? contentType : "application/octet-stream")
+            .body(resource);
 }
+    
+
 }
