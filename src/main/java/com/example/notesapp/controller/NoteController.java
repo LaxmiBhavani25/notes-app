@@ -80,4 +80,9 @@ public class NoteController {
                 .header("Location", note.getFilePath())
                 .build();
     }
+    @DeleteMapping("/deleteAll")
+public String deleteAll() {
+    repo.deleteAll();
+    return "Deleted";
+}
 }
