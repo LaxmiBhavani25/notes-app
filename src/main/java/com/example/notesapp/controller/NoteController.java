@@ -35,7 +35,7 @@ public class NoteController {
         try {
             Map uploadResult = cloudinary.uploader().upload(
                     file.getBytes(),
-                    ObjectUtils.asMap("resource_type", "auto")
+                    ObjectUtils.emptyMap();
             );
 
             String fileUrl = uploadResult.get("secure_url").toString();
