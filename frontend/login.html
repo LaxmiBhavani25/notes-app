@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <style>
+body {
+    font-family: Arial;
+    text-align: center;
+
+    background: linear-gradient(to right, #a1c4fd, #fbc2eb);
+}
+
+
+.box {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    margin: 100px auto;
+    width: 300px;
+    border-radius: 10px;
+}
+</style>
+</head>
+<body style="text-align:center; font-family:Arial;">
+<h1>📚 Online Notes Management System</h1>
+<div class="box">
+<h2>Login</h2>
+
+<input type="email" id="email" placeholder="Email"><br><br>
+<input type="password" id="password" placeholder="Password"><br><br>
+<p id="errorMsg" style="color:red;"></p>
+<button id="loginBtn" onclick="loginUser()">Login</button>
+
+<p>Don't have account? <a href="register.html">Register</a></p>
+<script>
+const BASE_URL = "https://notes-app-el7h.onrender.com";
+
+function loginUser() {
+    let email = document.getElementById("email").value.trim();
+    let password = document.getElementById("password").value.trim();
+    let errorMsg = document.getElementById("errorMsg");
+    let btn = document.getElementById("loginBtn");
+
+    errorMsg.innerText = "";
+
+    if (email === "" || password === "") {
+        errorMsg.innerText = "Email and Password cannot be empty";
+        return;
+    }
+
+    // LOADING STATE START
+    btn.disabled = true;
+    btn.innerText = "Loading...";
+
+    fetch(`${BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+    })
+    .then(async res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+    })
+    .then(data => {
+        localStorage.setItem("userId", data.id);
+        alert("Login successful");
+        window.location.href = "index.html";
+    })
+    .catch(() => {
+        errorMsg.innerText = "Invalid Login";
+    })
+    .finally(() => {
+        // LOADING STATE END
+        btn.disabled = false;
+        btn.innerText = "Login";
+    });
+}
+</script></div>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Notes App</title>
+    <style>
+table { border-collapse: collapse; }
+th, td { padding: 10px; text-align: center; }
+th { background: #007bff; color: white; }
+
+body {
+    font-family: Arial;
+    text-align: center;
+    background: linear-gradient(to right, #a1c4fd, #fbc2eb);
+}
+
+.container {
+    background: transparent ;
+    padding: 20px;
+    margin: 20px auto;
+    width: 85%;
+    border-radius: 10px;
+}
+
+button {
+    padding: 8px 12px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+.logout-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: red;
+}
+</style>
+<style>
+body { display: none; }
+</style>
+</head>
+
+<body>
+
+<button class="logout-btn" onclick="logout()">Logout</button>
+
+<div class="container">
+
+<h2>📚 Online Notes Management System</h2>
+
+<input type="text" id="search" placeholder="Search notes">
+<button onclick="searchNotes()">Search</button>
+
+<hr>
+
+<h3>Upload Note</h3>
+<input type="file" id="file"><br><br>
+<input type="text" id="title" placeholder="Title"><br><br>
+<input type="text" id="subject" placeholder="Subject"><br><br>
+
+<button onclick="upload()">Upload</button>
+
+<hr>
+
+<h3>All Notes</h3>
+<table border="1" style="margin:auto; width:80%;">
+<thead>
+<tr>
+<th>Title</th>
+<th>Subject</th>
+<th>View</th>
+</tr>
+</thead>
+<tbody id="notes"></tbody>
+</table>
+<script>
+const BASE_URL = "https://notes-app-el7h.onrender.com";
+
+
+
+function upload() {
+    let file = document.getElementById("file").files[0];
+    if (!file) {
+        alert("Choose file");
+        return;
+    }
+
+    let userId = localStorage.getItem("userId");
+
+    let formData = new FormData();
+    formData.append("file", file);
+    formData.append("title", document.getElementById("title").value);
+    formData.append("subject", document.getElementById("subject").value);
+    formData.append("userId", userId);
+
+    fetch(`${BASE_URL}/notes/upload`, {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.text())
+    .then(data => {
+        alert(data);
+        loadNotes();
+    })
+    .catch(() => alert("Upload failed"));
+}
+
+function loadNotes() {
+    let userId = localStorage.getItem("userId");
+
+    fetch(`${BASE_URL}/notes?userId=${userId}`)
+    .then(res => res.json())
+    .then(data => {
+        let html = "";
+        data.forEach(n => {
+            html += `
+<tr>
+<td>${n.title}</td>
+<td>${n.subject}</td>
+<td>
+<a href="${BASE_URL}/notes/view/${n.id}" target="_blank">
+<button>View</button>
+</a>
+</td>
+</tr>`;
+        });
+        document.getElementById("notes").innerHTML = html;
+    })
+    .catch(() => alert("Failed to load notes"));
+}
+
+function searchNotes() {
+    let keyword = document.getElementById("search").value;
+    let userId = localStorage.getItem("userId");
+
+    fetch(`${BASE_URL}/notes/search?keyword=${keyword}&userId=${userId}`)
+    .then(res => res.json())
+    .then(data => {
+        let html = "";
+        data.forEach(n => {
+            html += `
+<tr>
+<td>${n.title}</td>
+<td>${n.subject}</td>
+<td>
+<a href="${BASE_URL}/notes/view/${n.id}" target="_blank">
+<button>View</button>
+</a>
+</td>
+</tr>`;
+        });
+        document.getElementById("notes").innerHTML = html;
+    });
+}
+
+function logout() {
+    localStorage.removeItem("userId");
+    window.location.href = "login.html";
+}
+
+if (!localStorage.getItem("userId")) {
+    window.location.href = "login.html";
+} else {
+    document.body.style.display = "block";
+    loadNotes();
+}
+</script>
+
+</div>
+</body>
+</html>
